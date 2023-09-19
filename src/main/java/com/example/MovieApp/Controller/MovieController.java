@@ -2,53 +2,60 @@ package com.example.MovieApp.Controller;
 
 import com.example.MovieApp.Entity.Movie;
 import com.example.MovieApp.Repository.MovieRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
-@Controller
+@RestController
 @CrossOrigin(origins = "http://localhost:8090")
+@RequestMapping("/")
 public class MovieController {
 
-    @Autowired
-    MovieRepository movieRepository;
+    private final MovieRepository movieRepository;
 
-    @RequestMapping(value= "/ping", method = RequestMethod.GET)
-    @ResponseBody
+    public MovieController(MovieRepository movieRepository) {
+        this.movieRepository = movieRepository;
+    }
+
+    @GetMapping("/ping")
     public String healthCheck() {
         return "This works";
     }
 
-    @RequestMapping(value = "/movies", method = RequestMethod.GET)
-    @ResponseBody
-    public List<Movie> getAllMovies() {
+    @GetMapping("/movies")
+    List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
 
-    @RequestMapping(value="/movie", method = RequestMethod.POST)
-    @ResponseBody
-    public Movie addMovie(@RequestBody Movie movie) {
-        return movieRepository.save(movie);
+    @GetMapping("/movie/{id}")
+    ResponseEntity<?> getMovie(@PathVariable("id") Long id) {
+        Optional<Movie> movie = movieRepository.findById(id);
+        return movie.map(response -> ResponseEntity.ok().body(response))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @RequestMapping(value="/findmovie", method = RequestMethod.GET)
-    @ResponseBody
-    public Movie findMovie(@RequestParam("movieId") int movieId) {
-        return movieRepository.findById(movieId);
+    @PostMapping("/movie")
+    ResponseEntity<Movie> addMovie(@RequestBody Movie movie) throws URISyntaxException {
+        Movie result = movieRepository.save(movie);
+        return ResponseEntity.created(new URI("/api/movie/" + movie.getId()))
+                .body(result);
     }
 
-    @RequestMapping(value= "/updatemovie", method = RequestMethod.PUT)
-    @ResponseBody
-    public Movie updateMovie(@RequestBody Movie movie){
-        return movieRepository.save(movie);
+    @PutMapping("/movie/{id}")
+    ResponseEntity<Movie> updateMovie(@RequestBody Movie movie) {
+        Movie result = movieRepository.save(movie);
+        return ResponseEntity.ok().body(result);
     }
 
-    @RequestMapping(value="/deletemovie", method = RequestMethod.GET)
-    @ResponseBody
-    public void deleteMovie(@RequestParam("movieId") int movieId) {
-        movieRepository.deleteById(movieId);
+    @DeleteMapping("/movie/{id}")
+    public ResponseEntity<?> deleteMovie(@PathVariable("id") Long id) {
+        movieRepository.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 
 }

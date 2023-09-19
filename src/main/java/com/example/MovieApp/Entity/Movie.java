@@ -7,18 +7,11 @@ import jakarta.persistence.*;
 @Table(name = "MOVIE")
 public class Movie {
 
-    public Movie(){}
-    public Movie(String movieTitle, String movieGenre, int movieYear, int movieLength) {
-        this.movieTitle = movieTitle;
-        this.movieGenre = movieGenre;
-        this.movieYear = movieYear;
-        this.movieLength = movieLength;
-    }
 
     @Column(name = "Id")
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int Id;
+    private Long Id;
 
     @Column(name = "movieTitle")
     private String movieTitle;
@@ -32,11 +25,11 @@ public class Movie {
     @Column(name = "movieLength")
     private int movieLength;
 
-    public int getId() {
+    public Long getId() {
         return Id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         Id = id;
     }
 
